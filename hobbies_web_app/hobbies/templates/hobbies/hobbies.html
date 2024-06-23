@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div id = "App">
+    <h1>Hobbies Page</h1>
+    <table class = "table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Hobby Name</th>
+            </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(name, index) in hobbiesObject">
+            <th scope = "row">[[index]]</th>
+            <td>[[name.name]]</td>
+            <td>[[name.description]]</td>
+        </tbody>
+    </table>
+
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+      Create a new hobby
+    </button>
+
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Hobby Creation</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form>
+              {% csrf_token %}
+              <label for="hname">Hobby Name</label><br>
+              <input type="text" id="hname" name="hname"><br>
+              <label for="hdescription">Hobby Description</label>:</label><br>
+              <input type="text" id="hdescription" name="hdescription">
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+            <button @click="createHobby()" type="button" class="btn btn-primary">Save changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+        <script>
+          let myApp = Vue.createApp({
+              delimiters: ["[[", "]]"],
+              data() {
+                  return {
+                      hobbiesObject: []
+                  }
+              },
+              async created(){
+                  let response = await fetch("{% url 'hobbies API' %}");
+                  if (response.ok){
+                      let data = await response.json();
+                      this.hobbiesObject = data.hobbies
+                  }
+                  else{
+                      alert("loading hobbies list failed")
+                  };
+              },
+              methods:{
+                async createHobby(){
+                  let hname = document.querySelector("#hname").value;
+                  let hdescription = document.querySelector("#hdescription").value;
+                  if (hname === ""){
+                    alert("Name field is empty. Please fill it in")
+                    return;
+                  }
+
+                  if (hdescription===""){
+                    alert("Description field is empty. Please fill it in")
+                    return;
+                  }
+
+                  let response2 = await fetch("{% url 'create hobbies API' %}", {
+                    method: "POST",
+                    header:{
+                      "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value,
+                      "Accept": "application/json",
+                      "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                      "hname":hname,
+                      "hdescription":hdescription
+                    })
+                  });
+
+                  if(response2.ok){
+                    let response = await fetch("{% url 'hobbies API' %}");
+                  if (response.ok){
+                      let data = await response.json();
+                      this.hobbiesObject = data.hobbies
+                  }
+                  else{
+                      alert("loading hobbies list failed")
+                  };
+
+                  document.querySelector("#hname").value = "";
+                  document.querySelector("#hdescription").value = "";
+                  }
+                }
+              },
+            })
+            myApp.mount("#App")
+        </script>
+      </div>
+{% endblock content %}
