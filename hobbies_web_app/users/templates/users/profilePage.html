@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<div>
+    <h1>Main Profile Page</h1>
+    <p> Profile Image </p>
+    <img height="350" width="350" src={{personObject.image.url}}>
+    <p> Email: 
+    {{personObject.email}}
+    </p>
+    <p> City:
+    {{personObject.city}}
+    </p>
+    <p> Date of Birth: 
+    {{personObject.dob}}
+    </p>
+    <p> List of Hobbies </p>
+    {% for i in personObject.hobbies.values%}
+    <li>
+        Name: {{i.name}}.
+        Description: {{i.description}}
+    </li>
+    {% endfor %}<br>
+
+    <p> Users with most common hobbies as you </p>
+    
+</div>
+{% endblock content %}

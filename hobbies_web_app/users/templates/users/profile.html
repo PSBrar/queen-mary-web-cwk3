@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+  <div id = "App">
+    <h1> Welcome to your profile page, {{ user.username }}</h1>
+
+    <div v-if="emptyPerson == false" v-for="(person, index) in personObject">
+    <!--<p> Profile Image </p>
+    [[person.image]]
+    <p> Email: 
+    [[person.email]]
+    </p>
+    <p> City:
+    [[person.city]]
+    </p>
+    <p> Date of Birth: 
+    [[person.dob]]
+    </p>
+    <p> List of Hobbies </p>-->
+    
+    <form :action="'/profile/{{ user.username }}'" method='GET'>
+      <button type='submit' class="btn btn-primary"> View Profile </button>
+    </form>
+
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editModal">
+      Edit
+    </button>
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editModalLabel">Profile Editing</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <!--<form>
+              {% csrf_token %}
+              <label for="pimg">Image</label><br>
+              <input type="image" id="pimg" name="pimg"><br>
+              <label for="pcity">City</label>:</label><br>
+              <input type="text" id="pcity" name="pcity"><br>
+              <label for="pemail">Email</label>:</label><br>
+              <input type="email" id="pemail" name="pemail"><br>
+              <label for="pdob">City</label>:</label><br>
+              <input type="date" id="pdob" name="pdob"><br>
+              <label for="pcity">Hobbies</label>:</label><br>
+              <input type="text" id="pcity" name="pcity"><br>
+            </form>-->
+            <form action = "{% url 'edit' % } " enctype="multipart/form-data">
+              {% csrf_token %}
+              {{ form|crispy }}
+              <button type="submit" class="btn btn-primary" @click = "editPerson()">Update</button>
+          </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <div v-else-if="emptyPerson == true">
+      <!--<p>
+        You don't have a profile set up just yet. Click the Create Profile button below to get started.
+      </p>-->
+      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
+        Create Profile
+      </button>
+      <div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="createModalLabel">Profile Creation</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+            <form method="POST" action = "{% url 'profile' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <button type="submit" class="btn btn-primary">Create</button>
+            </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+        <script>
+          //document.forms['demoForm'].elements['hobbychoices'].onchange = function(e) {
+          var hobbiesList;
+          userName1 = "{{user.username|safe}}";
+          let myApp = Vue.createApp({
+              delimiters: ["[[", "]]"],
+              data() {
+                  return {
+                      personObject: [],
+                      userVar: "",
+                      emptyPerson: true,
+                  }
+              },
+              methods:{
+                async editPerson(){
+                  userVar = userName1
+                  apiCall = `/api/person_api/${userVar}`
+                  let response = await fetch(apiCall, {
+                      method: "GET", 
+                  });
+                  if (response.ok){
+                      let data = await response.json();
+                      console.log(data)
+                      this.personObject = data.person
+                      if(data.person == "nothing"){
+                        this.emptyPerson = true
+                        console.log("1")
+                      }
+                      else{
+                        this.emptyPerson = false
+                        console.log("2")
+                      }
+
+                  }
+                  else{
+                      alert("loading hobbies list failed")
+                  };
+                }
+              },
+              async created(){
+                this.editPerson()
+              },
+
+            })
+            myApp.mount("#App")
+        </script>
+      </div>
+{% endblock content %}
