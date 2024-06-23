@@ -1,5 +1,5 @@
 from django.http import JsonResponse
-from .models import Hobby
+from users.models import Hobby
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 import json
